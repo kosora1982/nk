@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Izmena stranice{% endblock %}
+{% block content %}
+<h1>Izmena stranice</h1>
+<form method="post">
+    <div class="mb-3">
+        <label for="title" class="form-label">Naslov</label>
+        <input type="text" class="form-control" id="title" name="title" value="{{ page.title }}" required>
+    </div>
+    <div class="mb-3">
+        <label for="content" class="form-label">Sadržaj</label>
+        <textarea class="form-control" id="content" name="content" rows="8" required>{{ page.content }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Sačuvaj</button>
+    <a href="{{ url_for('admin') }}" class="btn btn-secondary">Nazad</a>
+</form>
+{% endblock %}

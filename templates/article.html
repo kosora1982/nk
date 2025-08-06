@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}{{ article.title }}{% endblock %}
+{% block content %}
+<h1>{{ article.title }}</h1>
+<div>{{ article.content|safe }}</div>
+<p class="text-muted">Objavljeno: {{ article.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+{% if article.category %}
+<p>Kategorija: <a href="{{ url_for('category', cat_id=article.category.id) }}">{{ article.category.name }}</a></p>
+{% endif %}
+{% endblock %}

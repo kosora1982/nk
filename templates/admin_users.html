@@ -1,0 +1,10 @@
+{% extends 'admin_base.html' %}
+{% block title %}Admin Korisnici{% endblock %}
+{% block content %}
+<h1>Korisnici</h1>
+<ul>
+    {% for user in users %}
+    <li>{{ user.username }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

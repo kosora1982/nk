@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Dizajn stranice{% endblock %}
+{% block content %}
+<h1>Dizajn stranice</h1>
+<form method="post">
+    <div class="mb-3">
+        <label for="theme" class="form-label">Bootstrap tema (CDN link)</label>
+        <input type="text" class="form-control" id="theme" name="theme" value="{{ design.theme }}" required>
+        <div class="form-text">Primer: https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css</div>
+    </div>
+    <button type="submit" class="btn btn-primary">Sačuvaj</button>
+    <a href="{{ url_for('admin') }}" class="btn btn-secondary">Nazad</a>
+</form>
+{% endblock %}

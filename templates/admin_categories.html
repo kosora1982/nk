@@ -1,0 +1,10 @@
+{% extends 'admin_base.html' %}
+{% block title %}Admin Kategorije{% endblock %}
+{% block content %}
+<h1>Kategorije</h1>
+<ul>
+    {% for cat in categories %}
+    <li>{{ cat.name }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

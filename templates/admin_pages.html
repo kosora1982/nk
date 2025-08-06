@@ -1,0 +1,10 @@
+{% extends 'admin_base.html' %}
+{% block title %}Admin Stranice{% endblock %}
+{% block content %}
+<h1>Stranice</h1>
+<ul>
+    {% for page in pages %}
+    <li>{{ page.title }} - <a href="{{ url_for('edit_page', pid=page.id) }}">Izmeni</a></li>
+    {% endfor %}
+</ul>
+{% endblock %}

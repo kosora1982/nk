@@ -1,0 +1,10 @@
+{% extends 'admin_base.html' %}
+{% block title %}Admin Članci{% endblock %}
+{% block content %}
+<h1>Članci</h1>
+<ul>
+    {% for article in articles %}
+    <li>{{ article.title }} - <a href="{{ url_for('edit_article', aid=article.id) }}">Izmeni</a></li>
+    {% endfor %}
+</ul>
+{% endblock %}

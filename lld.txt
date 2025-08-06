@@ -1,0 +1,9 @@
+# Primer LLD datoteke: položaji planeta za određeni julijanski datum
+# Format: planeta;julijanski_datum;pozicija
+Sunce;2451545.0;10° Ovan
+Mesec;2451545.0;15° Rak
+Merkur;2451545.0;20° Bik
+Venera;2451545.0;5° Blizanci
+Mars;2451545.0;12° Lav
+Jupiter;2451545.0;18° Devica
+Saturn;2451545.0;22° Strelac

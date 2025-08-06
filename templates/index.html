@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Početna{% endblock %}
+{% block content %}
+<h1>Dobrodošli u CMS!</h1>
+<h3>Kategorije</h3>
+<ul>
+    {% for cat in categories %}
+    <li><a href="{{ url_for('category', cat_id=cat.id) }}">{{ cat.name }}</a></li>
+    {% endfor %}
+</ul>
+{% endblock %}

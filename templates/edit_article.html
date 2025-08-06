@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Izmena članka{% endblock %}
+{% block content %}
+<h1>Izmena članka</h1>
+<form method="post">
+    <div class="mb-3">
+        <label for="title" class="form-label">Naslov</label>
+        <input type="text" class="form-control" id="title" name="title" value="{{ article.title }}" required>
+    </div>
+    <div class="mb-3">
+        <label for="content" class="form-label">Sadržaj</label>
+        <textarea class="form-control" id="content" name="content" rows="8" required>{{ article.content }}</textarea>
+    </div>
+    <div class="mb-3">
+        <label for="category_id" class="form-label">Kategorija</label>
+        <select class="form-select" id="category_id" name="category_id">
+            <option value="">Bez kategorije</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if article.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Sačuvaj</button>
+    <a href="{{ url_for('admin') }}" class="btn btn-secondary">Nazad</a>
+</form>
+{% endblock %}

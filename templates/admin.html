@@ -1,0 +1,27 @@
+{% extends 'admin_base.html' %}
+{% block title %}Admin panel{% endblock %}
+{% block content %}
+<h1>Admin panel</h1>
+<a name="stranice"></a>
+<h3>Stranice</h3>
+<ul>
+    {% for page in pages %}
+    <li>{{ page.title }} - <a href="{{ url_for('edit_page', pid=page.id) }}">Izmeni</a></li>
+    {% endfor %}
+</ul>
+<a name="clanci"></a>
+<h3>Članci</h3>
+<ul>
+    {% for article in articles %}
+    <li>{{ article.title }} - <a href="{{ url_for('edit_article', aid=article.id) }}">Izmeni</a></li>
+    {% endfor %}
+</ul>
+<a name="kategorije"></a>
+<h3>Kategorije</h3>
+<ul>
+    {% for cat in categories %}
+    <li>{{ cat.name }}</li>
+    {% endfor %}
+</ul>
+<p><a href="{{ url_for('design') }}" class="btn btn-secondary">Dizajn stranice</a></p>
+{% endblock %}
