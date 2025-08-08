@@ -1,0 +1,166 @@
+{% extends 'admin_base.html' %}
+{% block title %}Izmeni Navigaciju{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Izmeni Navigaciju</h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Naslov *</label>
+                                <input type="text" class="form-control" id="title" name="title" value="{{ nav_item.title }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="slug" class="form-label">Slug</label>
+                                <input type="text" class="form-control" id="slug" name="slug" value="{{ nav_item.slug or '' }}" placeholder="auto-generisan">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="url" class="form-label">URL</label>
+                                <input type="text" class="form-control" id="url" name="url" value="{{ nav_item.url or '' }}" placeholder="/stranica">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="parent_id" class="form-label">Parent Navigacija</label>
+                                <select class="form-select" id="parent_id" name="parent_id">
+                                    <option value="">Glavna navigacija</option>
+                                    {% for item in navigation_items %}
+                                    <option value="{{ item.id }}" {% if nav_item.parent_id == item.id %}selected{% endif %}>{{ item.title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="order" class="form-label">Redosled</label>
+                                <input type="number" class="form-control" id="order" name="order" value="{{ nav_item.order }}" min="0">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="icon" class="form-label">Ikona (FontAwesome)</label>
+                                <input type="text" class="form-control" id="icon" name="icon" value="{{ nav_item.icon or '' }}" placeholder="fas fa-home">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="target" class="form-label">Target</label>
+                                <select class="form-select" id="target" name="target">
+                                    <option value="_self" {% if nav_item.target == '_self' %}selected{% endif %}>Isti prozor</option>
+                                    <option value="_blank" {% if nav_item.target == '_blank' %}selected{% endif %}>Novi prozor</option>
+                                    <option value="_parent" {% if nav_item.target == '_parent' %}selected{% endif %}>Parent frame</option>
+                                    <option value="_top" {% if nav_item.target == '_top' %}selected{% endif %}>Top frame</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="css_class" class="form-label">CSS Klasa</label>
+                                <input type="text" class="form-control" id="css_class" name="css_class" value="{{ nav_item.css_class or '' }}" placeholder="custom-class">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Opis</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Opis za mega menu...">{{ nav_item.description or '' }}</textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="is_external" name="is_external" {% if nav_item.is_external %}checked{% endif %}>
+                                    <label class="form-check-label" for="is_external">
+                                        Spoljašnji link
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="is_mega_menu" name="is_mega_menu" {% if nav_item.is_mega_menu %}checked{% endif %}>
+                                    <label class="form-check-label" for="is_mega_menu">
+                                        Mega Menu
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row" id="mega-menu-options" style="display: {% if nav_item.is_mega_menu %}block{% else %}none{% endif %};">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="mega_menu_columns" class="form-label">Broj kolona</label>
+                                <select class="form-select" id="mega_menu_columns" name="mega_menu_columns">
+                                    <option value="1" {% if nav_item.mega_menu_columns == 1 %}selected{% endif %}>1 kolona</option>
+                                    <option value="2" {% if nav_item.mega_menu_columns == 2 %}selected{% endif %}>2 kolone</option>
+                                    <option value="3" {% if nav_item.mega_menu_columns == 3 %}selected{% endif %}>3 kolone</option>
+                                    <option value="4" {% if nav_item.mega_menu_columns == 4 %}selected{% endif %}>4 kolone</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="image_url" class="form-label">URL slike</label>
+                                <input type="text" class="form-control" id="image_url" name="image_url" value="{{ nav_item.image_url or '' }}" placeholder="/static/images/menu.jpg">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Sačuvaj
+                        </button>
+                        <a href="{{ url_for('admin_navigation') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Nazad
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Auto-generate slug from title
+    $('#title').on('input', function() {
+        var title = $(this).val();
+        var slug = title.toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim('-');
+        $('#slug').val(slug);
+    });
+    
+    // Show/hide mega menu options
+    $('#is_mega_menu').change(function() {
+        if ($(this).is(':checked')) {
+            $('#mega-menu-options').show();
+        } else {
+            $('#mega-menu-options').hide();
+        }
+    });
+});
+</script>
+{% endblock %} 

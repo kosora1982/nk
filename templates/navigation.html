@@ -1,0 +1,152 @@
+{% macro render_navigation_item(item) %}
+    {% if item.has_children() %}
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle {{ item.css_class or '' }}" href="{{ item.url or '#' }}" 
+               id="navbarDropdown{{ item.id }}" role="button" data-bs-toggle="dropdown" 
+               aria-expanded="false" target="{{ item.target }}">
+                {% if item.icon %}<i class="{{ item.icon }}"></i>{% endif %}
+                {{ item.title }}
+            </a>
+            {% if item.is_mega_menu %}
+                <div class="dropdown-menu mega-menu" aria-labelledby="navbarDropdown{{ item.id }}">
+                    <div class="container">
+                        <div class="row">
+                            {% if item.image_url %}
+                            <div class="col-md-3">
+                                <img src="{{ item.image_url }}" class="img-fluid mb-3" alt="{{ item.title }}">
+                            </div>
+                            {% endif %}
+                            <div class="col-md-{{ 12 - (1 if item.image_url else 0) }}">
+                                <div class="row">
+                                    {% set children = item.get_children() %}
+                                    {% set columns = item.mega_menu_columns %}
+                                    {% set items_per_column = (children|length / columns)|round(0, 'ceil')|int %}
+                                    
+                                    {% for i in range(columns) %}
+                                    <div class="col-md-{{ 12 // columns }}">
+                                        <ul class="list-unstyled">
+                                            {% for child in children[i * items_per_column:(i + 1) * items_per_column] %}
+                                            <li>
+                                                <a class="dropdown-item" href="{{ child.url or '#' }}" target="{{ child.target }}">
+                                                    {% if child.icon %}<i class="{{ child.icon }}"></i>{% endif %}
+                                                    {{ child.title }}
+                                                    {% if child.description %}
+                                                        <small class="text-muted d-block">{{ child.description }}</small>
+                                                    {% endif %}
+                                                </a>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <ul class="dropdown-menu">
+                    {% for child in item.get_children() %}
+                    <li>
+                        <a class="dropdown-item" href="{{ child.url or '#' }}" target="{{ child.target }}">
+                            {% if child.icon %}<i class="{{ child.icon }}"></i>{% endif %}
+                            {{ child.title }}
+                            {% if child.description %}
+                                <small class="text-muted d-block">{{ child.description }}</small>
+                            {% endif %}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </li>
+    {% else %}
+        <li class="nav-item">
+            <a class="nav-link {{ item.css_class or '' }}" href="{{ item.url or '#' }}" target="{{ item.target }}">
+                {% if item.icon %}<i class="{{ item.icon }}"></i>{% endif %}
+                {{ item.title }}
+            </a>
+        </li>
+    {% endif %}
+{% endmacro %}
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url_for('index') }}">
+            <i class="fas fa-star"></i> Astrologija
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                {% for item in navigation_items %}
+                    {% if item.is_root() %}
+                        {{ render_navigation_item(item) }}
+                    {% endif %}
+                {% endfor %}
+            </ul>
+            
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('astrologija') }}">
+                        <i class="fas fa-moon"></i> Natalna karta
+                    </a>
+                </li>
+                {% if session.get('user_id') %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user"></i> Admin
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="{{ url_for('admin') }}">Dashboard</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin_pages') }}">Stranice</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin_articles') }}">Članci</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin_navigation') }}">Navigacija</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Odjavi se</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">
+                            <i class="fas fa-sign-in-alt"></i> Prijavi se
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<style>
+.mega-menu {
+    width: 100%;
+    padding: 1rem;
+}
+
+.mega-menu .container {
+    max-width: 1200px;
+}
+
+.mega-menu img {
+    border-radius: 0.375rem;
+}
+
+.dropdown-item small {
+    font-size: 0.875em;
+    line-height: 1.2;
+}
+
+.navbar-nav .nav-link {
+    font-weight: 500;
+}
+
+.navbar-nav .nav-link i {
+    margin-right: 0.25rem;
+}
+</style> 

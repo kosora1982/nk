@@ -1,42 +1,117 @@
 {% extends 'base.html' %}
 {% block title %}Astrologija - Natalna karta{% endblock %}
 {% block content %}
-<h1>Natalna karta (widget)</h1>
-<form method="post" class="mb-4">
+<div class="container">
     <div class="row">
-        <div class="col-md-3 mb-2">
-            <input type="text" class="form-control" name="ime" placeholder="Ime" required>
-        </div>
-        <div class="col-md-3 mb-2">
-            <input type="date" class="form-control" name="datum" required>
-        </div>
-        <div class="col-md-2 mb-2">
-            <input type="time" class="form-control" name="vreme" required>
-        </div>
-        <div class="col-md-2 mb-2">
-            <input type="text" class="form-control" name="lat" placeholder="Širina (npr. 44.7866)" required>
-        </div>
-        <div class="col-md-2 mb-2">
-            <input type="text" class="form-control" name="lon" placeholder="Dužina (npr. 20.4489)" required>
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h1 class="card-title">Natalna karta</h1>
+                    <p class="card-text">Unesite podatke za izračunavanje natalne karte i AI tumačenje</p>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="mb-4">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="ime" class="form-label">Ime</label>
+                                <input type="text" class="form-control" id="ime" name="ime" placeholder="Vaše ime" required value="Mladen">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="datum" class="form-label">Datum rođenja</label>
+                                <input type="date" class="form-control" id="datum" name="datum" required value="1982-08-09">
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label for="vreme" class="form-label">Vreme rođenja</label>
+                                <input type="time" class="form-control" id="vreme" name="vreme" required value="07:15">
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label for="lat" class="form-label">Geografska širina</label>
+                                <input type="text" class="form-control" id="lat" name="lat" placeholder="44.7866" required value="43.99408854053613">
+                                <div class="form-text">Npr. za Beograd: 44.7866</div>
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label for="lon" class="form-label">Geografska dužina</label>
+                                <input type="text" class="form-control" id="lon" name="lon" placeholder="20.4489" required value="19.911652165925794">
+                                <div class="form-text">Npr. za Beograd: 20.4489</div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-star"></i> Prikaži natalnu kartu
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
-    <button type="submit" class="btn btn-primary">Prikaži natalnu kartu</button>
-</form>
-{% if planete and asc %}
-    <h3>Planete</h3>
-    <table class="table table-bordered">
-        <tr><th>Planeta</th><th>Pozicija</th></tr>
-        {% for planeta, pozicija in planete.items() %}
-        <tr><td>{{ planeta }}</td><td>{{ pozicija }}</td></tr>
-        {% endfor %}
-    </table>
-    <h3>Ascendent</h3>
-    <p><b>{{ asc }}</b></p>
-{% endif %}
-{% if ai_tumacenje %}
-    <div class="alert alert-info mt-4" style="white-space: pre-line;">
-        <h4>AI Astrološko tumačenje</h4>
-        {{ ai_tumacenje }}
+
+    {% if planete and asc %}
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Pozicije planeta</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Planeta</th>
+                                    <th>Pozicija</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for planeta, pozicija in planete.items() %}
+                                <tr>
+                                    <td><strong>{{ planeta }}</strong></td>
+                                    <td>{{ pozicija }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Ascendent</h3>
+                </div>
+                <div class="card-body">
+                    <h4 class="text-primary">{{ asc }}</h4>
+                    <p class="text-muted">Ascendent je važan pokazatelj vašeg pristupa životu i kako vas vide drugi.</p>
+                </div>
+            </div>
+        </div>
     </div>
-{% endif %}
+    {% endif %}
+
+    {% if ai_tumacenje %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-brain"></i> AI Astrološko tumačenje
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if '[NAPOMENA:' in ai_tumacenje %}
+                        <div class="alert alert-info">
+                            <h5><i class="fas fa-info-circle"></i> Informacija</h5>
+                            <p>{{ ai_tumacenje.split('[NAPOMENA:')[0] }}</p>
+                            <p class="mb-0"><small><strong>Napomena:</strong> {{ ai_tumacenje.split('[NAPOMENA:')[1].split(']')[0] }}</small></p>
+                        </div>
+                    {% else %}
+                        <div class="tumacenje-content" style="white-space: pre-line; line-height: 1.6;">
+                            {{ ai_tumacenje }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}

@@ -1,17 +1,76 @@
-{% extends 'base.html' %}
+{% extends 'admin_base.html' %}
 {% block title %}Izmena stranice{% endblock %}
 {% block content %}
-<h1>Izmena stranice</h1>
-<form method="post">
-    <div class="mb-3">
-        <label for="title" class="form-label">Naslov</label>
-        <input type="text" class="form-control" id="title" name="title" value="{{ page.title }}" required>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Izmena stranice</h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Naslov</label>
+                        <input type="text" class="form-control" id="title" name="title" value="{{ page.title }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Sadržaj</label>
+                        <textarea class="form-control" id="content" name="content" rows="15" required>{{ page.content }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Sačuvaj
+                        </button>
+                        <a href="{{ url_for('admin') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Nazad
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div class="mb-3">
-        <label for="content" class="form-label">Sadržaj</label>
-        <textarea class="form-control" id="content" name="content" rows="8" required>{{ page.content }}</textarea>
-    </div>
-    <button type="submit" class="btn btn-primary">Sačuvaj</button>
-    <a href="{{ url_for('admin') }}" class="btn btn-secondary">Nazad</a>
-</form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+tinymce.init({
+    selector: '#content',
+    language: 'sr',
+    height: 500,
+    plugins: [
+        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+        'insertdatetime', 'media', 'table', 'help', 'wordcount'
+    ],
+    toolbar: 'undo redo | formatselect | ' +
+        'bold italic backcolor | alignleft aligncenter ' +
+        'alignright alignjustify | bullist numlist outdent indent | ' +
+        'removeformat | table | help',
+    content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; }',
+    menubar: 'file edit view insert format tools table help',
+    branding: false,
+    elementpath: false,
+    statusbar: true,
+    resize: true,
+    paste_data_images: true,
+    relative_urls: false,
+    remove_script_host: false,
+    convert_urls: true,
+    entity_encoding: 'raw',
+    encoding: 'xml',
+    verify_html: false,
+    cleanup: false,
+    cleanup_on_startup: false,
+    valid_elements: '*[*]',
+    extended_valid_elements: '*[*]',
+    custom_elements: '*[*]',
+    extended_valid_elements: 'script[src|async|defer|type|charset],style[*],link[*],meta[*],iframe[*],object[*],embed[*],param[*],map[*],area[*],form[*],input[*],button[*],select[*],textarea[*],label[*],fieldset[*],legend[*],optgroup[*],option[*]',
+    setup: function(editor) {
+        editor.on('change', function() {
+            editor.save();
+        });
+    }
+});
+</script>
 {% endblock %}
