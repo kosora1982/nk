@@ -152,3 +152,22 @@ class Navigation(db.Model):
             children.append(child)
             children.extend(child.get_all_children_recursive())
         return children
+
+# --- HOROSCOPE TYPE LOOKUP ---
+class HoroscopeType(db.Model):
+    __tablename__ = 'horoscope_type'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)  # npr. 'dnevni', 'nedeljni', ...
+    description = db.Column(db.String(200))
+    horoscopes = db.relationship('Horoscope', backref='type', lazy=True)
+
+# --- HOROSCOPE ---
+class Horoscope(db.Model):
+    __tablename__ = 'horoscope'
+    id = db.Column(db.Integer, primary_key=True)
+    type_id = db.Column(db.Integer, db.ForeignKey('horoscope_type.id'), nullable=False)
+    sign = db.Column(db.String(20), nullable=False)  # npr. 'ovan', 'bik', ...
+    date = db.Column(db.Date, nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

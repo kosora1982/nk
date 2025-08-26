@@ -10,6 +10,7 @@ SEEDERS = [
     'seed_design',
     'seed_widget',
     'seed_navigation',
+    'seed_horoscope',
 ]
 
 if __name__ == '__main__':

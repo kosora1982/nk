@@ -99,57 +99,18 @@ NAPOMENA: Ovo je osnovno tumačenje. Za detaljniju analizu preporučujemo konsul
     return tumacenje
 
 def generisi_llm_tumacenje(ime, planete, asc):
-    print("FLASK ENV DEBUG: API KEY =", repr(OPENROUTER_API_KEY))
-    # Check if API key is properly configured
-    if not OPENROUTER_API_KEY:
-        return generisi_osnovno_tumacenje(ime, planete, asc)
-    
-    prompt = f"""
-Napravi najdetaljnije moguće astrološko tumačenje natalne karte za osobu po imenu {ime}. \nPlanete su na sledećim pozicijama:\n"""
-    for planeta, pozicija in planete.items():
-        prompt += f"{planeta}: {pozicija}\n"
-    prompt += f"Ascendent: {asc}\n"
-    prompt += "\nTumačenje napiši na srpskom jeziku, u stilu profesionalnog astrologa. Obavezno uključi:\n"
-    prompt += "- Detaljnu analizu ličnosti, potencijala, izazova, karme, odnosa, zdravlja, karijere i duhovnosti.\n"
-    prompt += "- Posebno analiziraj aspekte između planeta i njihov uticaj.\n"
-    prompt += "- Daj preporuke za lični razvoj, praktične savete i upozorenja.\n"
-    prompt += "- Uključi detalje o finansijama, porodici, obrazovanju, hobijima i životnim vrednostima.\n"
-    prompt += "- Tumačenje mora biti izuzetno opširno, sa minimum 2000 reči, i strukturirano u više tematskih celina sa podnaslovima.\n"
-    prompt += "- Koristi što više primera, praktičnih saveta i detaljnih analiza.\n"
-    
-    headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "model": OPENROUTER_MODEL,
-        "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": 4096,
-        "temperature": 0.8
-    }
-    
+    """Generiše AI tumačenje koristeći lokalni interpreter"""
     try:
-        response = requests.post(OPENROUTER_URL, headers=headers, json=data, timeout=180)
+        # Import lokalni AI interpreter
+        from local_ai_interpreter import generate_local_ai_interpretation
         
-        if response.status_code == 200:
-            result = response.json()
-            content = result['choices'][0]['message']['content'].strip()
-            # Return the AI content directly
-            return content
-        elif response.status_code == 401:
-            return generisi_osnovno_tumacenje(ime, planete, asc) + "\n\n[NAPOMENA: AI tumačenje nije dostupno zbog greške sa API ključem. Prikazano je osnovno tumačenje.]"
-        elif response.status_code == 429:
-            return generisi_osnovno_tumacenje(ime, planete, asc) + "\n\n[NAPOMENA: AI tumačenje nije dostupno zbog prekoračenja limita. Prikazano je osnovno tumačenje.]"
-        elif response.status_code == 500:
-            return generisi_osnovno_tumacenje(ime, planete, asc) + "\n\n[NAPOMENA: AI tumačenje nije dostupno zbog greške na serveru. Prikazano je osnovno tumačenje.]"
-        else:
-            return generisi_osnovno_tumacenje(ime, planete, asc) + f"\n\n[NAPOMENA: AI tumačenje nije dostupno (Status: {response.status_code}). Prikazano je osnovno tumačenje.]"
-    except requests.exceptions.Timeout:
-        return generisi_osnovno_tumacenje(ime, planete, asc) + "\n\n[NAPOMENA: AI tumačenje nije dostupno zbog timeout-a. Prikazano je osnovno tumačenje.]"
-    except requests.exceptions.ConnectionError:
-        return generisi_osnovno_tumacenje(ime, planete, asc) + "\n\n[NAPOMENA: AI tumačenje nije dostupno zbog greške konekcije. Prikazano je osnovno tumačenje.]"
+        # Generiši tumačenje koristeći lokalni AI
+        return generate_local_ai_interpretation(ime, planete, asc)
+        
     except Exception as e:
-        return generisi_osnovno_tumacenje(ime, planete, asc) + f"\n\n[NAPOMENA: AI tumačenje nije dostupno zbog neočekivane greške. Prikazano je osnovno tumačenje.]"
+        print(f"Greška u lokalnom AI tumačenju: {e}")
+        # Fallback na osnovno tumačenje
+        return generisi_osnovno_tumacenje(ime, planete, asc)
 
 # --- LOGIN SISTEM ---
 def login_required(f):
@@ -231,10 +192,15 @@ def show_page(slug):
     # Renderuj widgete
     for widget in page.widgets:
         print('WIDGET CONTENT:', widget.content)
-        widget.content = render_template_string(
-            widget.content,
-            dnevni_horoskop_widget=dnevni_horoskop_widget
-        )
+        if "{{" in widget.content:
+            widget.content = render_template_string(
+                widget.content,
+                dnevni_horoskop_widget=dnevni_horoskop_widget,
+                nedeljni_horoskop_widget=nedeljni_horoskop_widget,
+                mesecni_horoskop_widget=mesecni_horoskop_widget,
+                godisnji_horoskop_widget=godisnji_horoskop_widget
+            )
+        # Ako nema Jinja koda, ostavi content iz baze
     return render_template('page.html', theme=theme, page=page, pages=pages, categories=categories)
 
 @app.route('/kategorija/<int:cat_id>')
@@ -500,52 +466,59 @@ def inject_navigation():
     """Inject navigation into all templates"""
     return dict(navigation_items=get_navigation())
 
-# --- DNEVNI HOROSKOP WIDGET ---
-from datetime import date
+# --- DNEVNI, NEDELJNI, MESECNI, GODISNJI HOROSKOP WIDGETI ---
+from datetime import date, timedelta
+from models.models import Horoscope, HoroscopeType
 
-def dnevni_horoskop_widget():
+def _horoskop_widget(tip_key, title, icon, badge_fmt):
     danas = date.today()
     znaci = [
         'Ovan', 'Bik', 'Blizanci', 'Rak', 'Lav', 'Devica',
         'Vaga', 'Škorpija', 'Strelac', 'Jarac', 'Vodolija', 'Ribe'
     ]
-    opisi = [
-        "Danas je dan za nove početke. Pratite svoje instinkte i ne bojte se promena. Ljubav i posao zahtevaju hrabrost.",
-        "Fokusirajte se na stabilnost i praktične zadatke. Prijatelji mogu doneti korisne savete. Veče je idealno za opuštanje.",
-        "Komunikacija je ključ uspeha danas. Očekujte zanimljive vesti ili susrete. Budite otvoreni za nova poznanstva.",
-        "Porodica i dom su u centru pažnje. Posvetite vreme najbližima i unesite harmoniju u svoj prostor.",
-        "Vaša energija je na vrhuncu! Iskoristite je za kreativne projekte ili sport. Ljubavni život donosi uzbuđenja.",
-        "Detalji su važni. Posvetite se organizaciji i zdravlju. Mali koraci vode do velikih rezultata.",
-        "Danas je dan za balans i diplomatiju. Rešavajte nesuglasice mirno i uživajte u umetnosti ili lepoti.",
-        "Intuicija je pojačana. Slušajte unutrašnji glas i ne ulazite u nepotrebne rasprave. Veče donosi strast.",
-        "Putovanja i učenje su naglašeni. Proširite vidike i prihvatite izazove sa optimizmom.",
-        "Odgovornosti su u prvom planu. Budite istrajni i ne odustajte od ciljeva. Finansije zahtevaju pažnju.",
-        "Društveni život je aktivan. Povežite se sa prijateljima i budite otvoreni za nove ideje.",
-        "Duhovnost i mašta su naglašeni. Posvetite vreme sebi, meditaciji ili umetnosti. Snovi mogu biti inspirativni."
-    ]
-    cards = []
-    for i, znak in enumerate(znaci):
-        cards.append(f'''
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-star-fill text-warning"></i> {znak}</h5>
-                    <p class="card-text">{opisi[i]}</p>
-                    <span class="badge bg-light text-secondary">{danas.strftime('%d.%m.%Y.')}</span>
-                </div>
-            </div>
-        </div>
-        ''')
-    return f'''
-    <div class="dnevni-horoskop-widget">
-        <h3 class="mb-4"><i class="bi bi-calendar2-day text-primary"></i> Dnevni horoskop</h3>
-        <div class="row">
-            {''.join(cards)}
-        </div>
-    </div>
-    '''
+    # Odredi datum za prikaz
+    if tip_key == 'dnevni':
+        datum = danas
+    elif tip_key == 'nedeljni':
+        datum = danas - timedelta(days=danas.weekday())
+    elif tip_key == 'mesecni':
+        datum = danas.replace(day=1)
+    elif tip_key == 'godisnji':
+        datum = danas.replace(month=1, day=1)
+    else:
+        datum = danas
+    # Učitaj horoskope iz baze
+    tip = HoroscopeType.query.filter_by(name=tip_key).first()
+    horoskopi = {h.sign: h.content for h in Horoscope.query.filter_by(type_id=tip.id, date=datum)} if tip else {}
+    lines = []
+    for znak in znaci:
+        opis = horoskopi.get(znak, "Nema podataka za ovaj znak.")
+        lines.append(f"{znak}: {opis}")
+    return f"{title} ({badge_fmt})\n" + "\n".join(lines)
+
+def dnevni_horoskop_widget():
+    danas = date.today()
+    return _horoskop_widget('dnevni', 'Dnevni horoskop', 'bi bi-calendar2-day', danas.strftime('%d.%m.%Y.'))
+
+def nedeljni_horoskop_widget():
+    danas = date.today()
+    monday = danas - timedelta(days=danas.weekday())
+    return _horoskop_widget('nedeljni', 'Nedeljni horoskop', 'bi bi-calendar2-week', f"{monday.strftime('%d.%m.%Y.')}")
+
+def mesecni_horoskop_widget():
+    danas = date.today()
+    first = danas.replace(day=1)
+    return _horoskop_widget('mesecni', 'Mesečni horoskop', 'bi bi-calendar2-month', first.strftime('%m.%Y.'))
+
+def godisnji_horoskop_widget():
+    danas = date.today()
+    first = danas.replace(month=1, day=1)
+    return _horoskop_widget('godisnji', 'Godišnji horoskop', 'bi bi-calendar2-range', str(first.year))
 
 app.jinja_env.globals['dnevni_horoskop_widget'] = dnevni_horoskop_widget
+app.jinja_env.globals['nedeljni_horoskop_widget'] = nedeljni_horoskop_widget
+app.jinja_env.globals['mesecni_horoskop_widget'] = mesecni_horoskop_widget
+app.jinja_env.globals['godisnji_horoskop_widget'] = godisnji_horoskop_widget
 
 def seed_db():
     from models.models import Page
